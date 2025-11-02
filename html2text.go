@@ -206,7 +206,7 @@ func HTML2TextWithOptions(html string, reqOpts ...Option) string {
 			inEnt = false
 			continue
 
-		case r == '&' && shouldOutput: // possible html entity
+		case r == '&' && shouldOutput && badTagStackDepth == 0: // possible html entity
 			entName := ""
 			isEnt := false
 
@@ -311,6 +311,7 @@ func HTML2TextWithOptions(html string, reqOpts ...Option) string {
 
 						if !badLinkHrefRE.MatchString(link) {
 							outBuf.WriteString(HTMLEntitiesToText(link))
+							canPrintNewline = true
 						}
 					}
 				}
@@ -321,13 +322,13 @@ func HTML2TextWithOptions(html string, reqOpts ...Option) string {
 			}
 			continue
 
-		} // switch end
+	} // switch end
 
-		if shouldOutput && badTagStackDepth == 0 && !inEnt {
-			canPrintNewline = true
-			outBuf.WriteRune(r)
-		}
+	if shouldOutput && badTagStackDepth == 0 && !inEnt {
+		canPrintNewline = true
+		outBuf.WriteRune(r)
 	}
+}
 
 	return outBuf.String()
 }
